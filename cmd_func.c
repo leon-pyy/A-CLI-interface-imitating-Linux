@@ -21,7 +21,8 @@
 // SOFTWARE.
 
 /****************************************************************
- * ¸ÃÎÄ¼şÓëuart_drive¹²Í¬ÊµÏÖÁËÃüÁî¹¦ÄÜ
+ * è¯¥æ–‡ä»¶ä¸uart_driveå…±åŒå®ç°å‘½ä»¤åŠŸèƒ½
+ * ä¸²å£é©±åŠ¨éœ€è¦æ ¹æ®ä½ ä½¿ç”¨çš„å¹³å°ä½œå‡ºè°ƒæ•´
 ****************************************************************/
 #include "stdio.h"
 #include "stdbool.h"
@@ -33,14 +34,14 @@
 #include "stdarg.h"
 #include "cmd_func.h"
 
-extern uint8_t rx_buffer[USART_REC_LEN];//´®¿ÚÒ»´Î½ÓÊÜµÄ×Ö·û
-char token[CMD_PARMNUM][CMD_LONGTH]={0};//ÃüÁî»º´æ
-extern bool cmd_deal_ok;//Ëø£¬ÉÏËøÎª1
+extern uint8_t rx_buffer[USART_REC_LEN];//ä¸²å£ä¸€æ¬¡æ¥å—çš„å­—ç¬¦
+char token[CMD_PARMNUM][CMD_LONGTH]={0};//å‘½ä»¤ç¼“å­˜
+extern bool cmd_deal_ok;//é”ï¼Œä¸Šé”ä¸º1
 
-//ÃüÁîÖ´ĞĞµÄ¾ßÌåº¯ÊıÊ¾Àı
+//å‘½ä»¤æ‰§è¡Œçš„å…·ä½“å‡½æ•°ç¤ºä¾‹
 void caclu_add(void){
     int parm1=0,parm2=0;
-    //²ÎÊıÓĞĞ§ĞÔÅĞ¶¨
+    //å‚æ•°æœ‰æ•ˆæ€§åˆ¤å®š
     if(strlen(token[1])==0){
         printf("cmd parm invalid!\r\n");
         return;
@@ -57,7 +58,7 @@ void caclu_add(void){
 
 void caclu_sub(void){
     int parm1=0,parm2=0;
-    //²ÎÊıÓĞĞ§ĞÔÅĞ¶¨
+    //å‚æ•°æœ‰æ•ˆæ€§åˆ¤å®š
     if(strlen(token[1])==0){
         printf("cmd parm invalid!\r\n");
         return;
@@ -74,7 +75,7 @@ void caclu_sub(void){
 
 void caclu_mul(void){
     int parm1=0,parm2=0;
-    //²ÎÊıÓĞĞ§ĞÔÅĞ¶¨
+    //å‚æ•°æœ‰æ•ˆæ€§åˆ¤å®š
     if(strlen(token[1])==0){
         printf("cmd parm invalid!\r\n");
         return;
@@ -91,7 +92,7 @@ void caclu_mul(void){
 
 void caclu_div(void){
     int parm1=0,parm2=0;
-    //²ÎÊıÓĞĞ§ĞÔÅĞ¶¨
+    //å‚æ•°æœ‰æ•ˆæ€§åˆ¤å®š
     if(strlen(token[1])==0){
         printf("cmd parm invalid!\r\n");
         return;
@@ -106,8 +107,8 @@ void caclu_div(void){
     printf("div = %d \r\n",parm1/parm2);
 }
 
-//ÃüÁîÁĞ±í£¬ĞÂµÄÃüÁîÌí¼Óµ½ÕâÀï
-//ÃüÁî¶ÔÓ¦µÄº¯Êı-ÃüÁîÃû-ÃüÁîËµÃ÷
+//å‘½ä»¤åˆ—è¡¨ï¼Œæ–°çš„å‘½ä»¤æ·»åŠ åˆ°è¿™é‡Œ
+//å‘½ä»¤å¯¹åº”çš„å‡½æ•°-å‘½ä»¤å-å‘½ä»¤è¯´æ˜
 _cmd_table cmd_table[]={
     (void *)caclu_add,"add","add [parm1] [parm2]",
     (void *)caclu_sub,"sub","sub [parm1] [parm2]",
@@ -115,14 +116,14 @@ _cmd_table cmd_table[]={
     (void *)caclu_div,"div","div [parm1] [parm2]",
 };
 
-//¼ÆËãÃüÁîµÄÊıÁ¿
+//è®¡ç®—å‘½ä»¤çš„æ•°é‡
 int cmdnum = sizeof(cmd_table)/sizeof(_cmd_table); 
 
-//Ö´ĞĞÃüÁî
+//æ‰§è¡Œå‘½ä»¤
 void execute_cmd(void){
-    int cmd_is_find = 0;//±ê¼ÇÊÇ·ñÕÒµ½ÃüÁî
+    int cmd_is_find = 0;//æ ‡è®°æ˜¯å¦æ‰¾åˆ°å‘½ä»¤
     if(strlen(token[0])!=0){
-        if(!strcmp(token[0],"ls")){//Èç¹ûÊäÈëµÄÊÇ´òÓ¡ÃüÁîÁĞ±í
+        if(!strcmp(token[0],"ls")){//å¦‚æœè¾“å…¥çš„æ˜¯æ‰“å°å‘½ä»¤åˆ—è¡¨
 			printf("-------------------- cmd table --------------------\r\n");
             for(int i=0;i<cmdnum;i++){
                 printf("cmd:%s    eg:%s\r\n",cmd_table[i].name,cmd_table[i].example);
@@ -130,23 +131,23 @@ void execute_cmd(void){
             printf("---------------------------------------------------\r\n");
         }
         else{
-            for(int j=0;j<cmdnum;j++){//ÕÒÑ°ĞèÒªÖ´ĞĞµÄÃüÁî
+            for(int j=0;j<cmdnum;j++){//æ‰¾å¯»éœ€è¦æ‰§è¡Œçš„å‘½ä»¤
                 if(!strcmp(token[0],cmd_table[j].name)){
-                    cmd_table[j].func();//Ö´ĞĞÃüÁîº¯Êı
+                    cmd_table[j].func();//æ‰§è¡Œå‘½ä»¤å‡½æ•°
                     cmd_is_find++;
                 }
             }
-            if(cmd_is_find==0){//Î´ÕÒµ½ÃüÁî
+            if(cmd_is_find==0){//æœªæ‰¾åˆ°å‘½ä»¤
                 printf("cmd error!\r\n");
             }
         }
     }
 
-    //ÃüÁîÖ´ĞĞÍê±Ï£¬Çå¿ÕÃüÁî»º´æ
+    //å‘½ä»¤æ‰§è¡Œå®Œæ¯•ï¼Œæ¸…ç©ºå‘½ä»¤ç¼“å­˜
 	memset(token,0,CMD_PARMNUM*CMD_LONGTH);
 }
 
-//ÃüÁî´¦Àíº¯Êı£¬·ÅÔÚmianµÄwhile(1)ÖĞ
+//å‘½ä»¤å¤„ç†å‡½æ•°ï¼Œæ”¾åœ¨miançš„while(1)ä¸­
 void process_cmd(void){
     char tmp_data='\0';
     int buf_count=0;
@@ -165,7 +166,7 @@ void process_cmd(void){
                     }
                 }
                 else{
-                    token[parm_count][str_count] = '\0';//½«¿Õ¸ñÌæ»»Îª×Ö·û´®½áÊø·û
+                    token[parm_count][str_count] = '\0';//å°†ç©ºæ ¼æ›¿æ¢ä¸ºå­—ç¬¦ä¸²ç»“æŸç¬¦
                     if(parm_count<CMD_PARMNUM-1){
                         parm_count++;
                     }
@@ -177,9 +178,10 @@ void process_cmd(void){
             }
         }
 		printf("\r\n");
-        execute_cmd();//Ö´ĞĞÃüÁî
-        memset(rx_buffer,0,USART_REC_LEN);//Çå¿Õ´®¿Úbuffer
-        cmd_deal_ok = 1;//½âËø
+        execute_cmd();//æ‰§è¡Œå‘½ä»¤
+        memset(rx_buffer,0,USART_REC_LEN);//æ¸…ç©ºä¸²å£buffer
+        cmd_deal_ok = 1;//è§£é”
         printf("[leon]@leon:");
     }
+
 }
