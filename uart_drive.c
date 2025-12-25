@@ -20,7 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/*´®¿Ú´¦Àí*/
+/****************************************************************
+ * è¯¥æ–‡ä»¶ä¸cmd_funcå…±åŒå®ç°å‘½ä»¤åŠŸèƒ½
+ * ä¸²å£é©±åŠ¨éœ€è¦æ ¹æ®ä½ ä½¿ç”¨çš„å¹³å°ä½œå‡ºè°ƒæ•´
+ * è¾“å…¥â€œlsâ€æ˜¾ç¤ºå‘½ä»¤åˆ—è¡¨
+****************************************************************/
+
+/*ä¸²å£å¤„ç†*/
 
 #include "uart_drive.h"
 #include "cmd_func.h"
@@ -38,8 +44,8 @@ extern int cmdnum;
 uint8_t rx_buffer[USART_REC_LEN]={0};
 uint8_t rx_data;
 
-static uint16_t rx_index = 0;     // ÃüÁî³¤¶È
-static uint16_t cursor_pos = 0;   // ¹â±êÎ»ÖÃ
+static uint16_t rx_index = 0;     // å‘½ä»¤é•¿åº¦
+static uint16_t cursor_pos = 0;   // å…‰æ ‡ä½ç½®
 
 bool cmd_deal_ok = 1;
 
@@ -58,12 +64,12 @@ typedef enum {
 
 static esc_state_t esc_state = ESC_IDLE;
 
-/* ´®¿Ú1·¢ËÍ */
+/* ä¸²å£1å‘é€ */
 void uart1_send(uint8_t *data,uint16_t len){
     HAL_UART_Transmit(&huart1,data,len,50);
 }
 
-/* ÅĞ¶ÏÇ°×º */
+/* åˆ¤æ–­å‰ç¼€ */
 static bool str_start_with(const char *str, const char *prefix){
     while (*prefix){
         if (*str++ != *prefix++)
@@ -72,7 +78,7 @@ static bool str_start_with(const char *str, const char *prefix){
     return true;
 }
 
-/* ±£´æÀúÊ·ÃüÁî */
+/* ä¿å­˜å†å²å‘½ä»¤ */
 static void history_save(const char *cmd){
     if (cmd[0] == '\0') return;
 
@@ -84,7 +90,7 @@ static void history_save(const char *cmd){
     history_index = history_count;
 }
 
-/* Çå³ıµ±Ç°ĞĞ */
+/* æ¸…é™¤å½“å‰è¡Œ */
 static void clear_line(void){
     while (cursor_pos > 0){
         uint8_t bs_seq[3] = {'\b', ' ', '\b'};
@@ -93,7 +99,7 @@ static void clear_line(void){
     }
 }
 
-/* ¡û */
+/* â† */
 static void cursor_left(void){
     if (cursor_pos > 0){
         uart1_send((uint8_t *)"\b", 1);
@@ -101,7 +107,7 @@ static void cursor_left(void){
     }
 }
 
-/* ¡ú */
+/* â†’ */
 static void cursor_right(void){
     if (cursor_pos < rx_index){
         uart1_send(&rx_buffer[cursor_pos], 1);
@@ -109,7 +115,7 @@ static void cursor_right(void){
     }
 }
 
-/* ¡ü */
+/* â†‘ */
 static void cmd_history_up(void){
     if (history_count == 0) return;
     int oldest = history_count - CMD_HISTORY_NUM;
@@ -134,17 +140,17 @@ static void cmd_history_up(void){
     uart1_send(rx_buffer, rx_index);
 }
 
-/* ¡ı */
+/* â†“ */
 static void cmd_history_down(void){
     if (history_count == 0) return;
 
-    /* ÒÑ¾­ÔÚ¿ÕĞĞ£¬²»ÄÜÔÙÍùÏÂ */
+    /* å·²ç»åœ¨ç©ºè¡Œï¼Œä¸èƒ½å†å¾€ä¸‹ */
     if (history_index >= history_count)
         return;
     
     history_index++;
 
-    /* µ½´ï¿ÕĞĞ */
+    /* åˆ°è¾¾ç©ºè¡Œ */
     if (history_index == history_count)
     {
         while (cursor_pos < rx_index)
@@ -170,14 +176,14 @@ static void cmd_history_down(void){
     uart1_send(rx_buffer, rx_index);
 }
 
-/* ´®¿Ú½ÓÊÕ»Øµ÷ */
+/* ä¸²å£æ¥æ”¶å›è°ƒ */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if(huart->Instance != USART1) return;
 
     if (!cmd_deal_ok) goto rx_exit;
 
-    /* ·½Ïò¼ü */
+    /* æ–¹å‘é”® */
     if (esc_state != ESC_IDLE){
         if (esc_state == ESC_START){
             esc_state = (rx_data == '[') ? ESC_BRACKET : ESC_IDLE;
@@ -201,7 +207,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         goto rx_exit;
     }
 
-    /* »Ø³µ */
+    /* å›è½¦ */
     if (rx_data == CMD_CR || rx_data == CMD_LF){
         rx_buffer[rx_index] = '\0';
         history_save((char *)rx_buffer);
@@ -213,7 +219,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         goto rx_exit;
     }
 
-    /* ÍË¸ñ£¨Ö§³ÖĞĞÄÚÉ¾³ı£© */
+    /* é€€æ ¼ï¼ˆæ”¯æŒè¡Œå†…åˆ é™¤ï¼‰ */
     if (rx_data == CMD_BS){
         if (cursor_pos > 0){
             memmove(&rx_buffer[cursor_pos - 1],
@@ -234,7 +240,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         goto rx_exit;
     }
 
-    /* TAB ²¹È« */
+    /* TAB è¡¥å…¨ */
     if (rx_data == CMD_HT){
         uint8_t match = 0;
         const char *last = NULL;
@@ -276,7 +282,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         goto rx_exit;
     }
 
-    /* ÆÕÍ¨¿ÉÏÔÊ¾×Ö·û */
+    /* æ™®é€šå¯æ˜¾ç¤ºå­—ç¬¦ */
     if (rx_data >= 0x20 && rx_data <= 0x7E){
         if (rx_index < USART_REC_LEN - 1){
             memmove(&rx_buffer[cursor_pos + 1],
@@ -298,7 +304,7 @@ rx_exit:
     HAL_UART_Receive_IT(&huart1, &rx_data, 1);
 }
 
-/* ÖØ¶¨Òåprintfµ½´®¿Ú1 */
+/* é‡å®šä¹‰printfåˆ°ä¸²å£1 */
 #if (__ARMCC_VERSION >= 6011111)
 __asm(".global __use_no_semihosting\n\t");
 __asm(".global __ARM_use_no_argv \n\t");
@@ -331,7 +337,7 @@ int fputc(int ch, FILE *f){
     return ch;
 }
 
-/* µ÷ÊÔ°ïÖú´òÓ¡ĞÅÏ¢º¯Êı */
+/* è°ƒè¯•å¸®åŠ©æ‰“å°ä¿¡æ¯å‡½æ•° */
 void sys_log_info(const char *func,const long line,const char *format, ...){
     va_list args;
 
@@ -356,4 +362,5 @@ void _sys_log_info(const char *format, ...){
     printf("%s",log_buf);
 
     va_end(args);    
+
 }
